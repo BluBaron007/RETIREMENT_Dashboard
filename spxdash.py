@@ -35,7 +35,7 @@ def estimate_spy(spx_val):
 
 # --- Tracking Error Visualization with Comparison ---
 st.subheader("📈 SPY Comparison Chart")
-compare_ticker = st.text_input("Compare with another stock (e.g. AAPL, MSFT, TSLA):", value="AAPL")
+compare_ticker = st.text_input("Please choose a stock (e.g. AAPL, MSFT, TSLA):", value="AAPL")
 
 try:
     spy_hist = yf.download("SPY", period="1y")
