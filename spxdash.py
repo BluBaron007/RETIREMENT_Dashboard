@@ -34,7 +34,7 @@ def estimate_spy(spx_val):
     return round(spx_val / 10, 2)
 
 # --- Tracking Error Visualization with Comparison ---
-st.subheader("📈 SPY vs Estimated SPY (with Custom Stock)")
+st.subheader("📈 SPY Comparison Chart")
 compare_ticker = st.text_input("Compare with another stock (e.g. AAPL, MSFT, TSLA):", value="AAPL")
 
 try:
