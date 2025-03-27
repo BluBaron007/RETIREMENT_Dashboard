@@ -11,11 +11,11 @@ st.markdown("""
 
     html, body, [class*="css"]  {
         font-family: 'SF Pro Display', sans-serif;
-        background-color: #f4f5f7;
+        background-color: #F8F8FF;
         color: #1c1c1e;
     }
     .stApp {
-        background-color: #f4f5f7;
+        background-color: #F8F8FF;
     }
     .block-container {
         padding-top: 2rem;
