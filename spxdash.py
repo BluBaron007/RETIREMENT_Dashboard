@@ -11,11 +11,11 @@ st.markdown("""
 
     html, body, [class*="css"]  {
         font-family: 'SF Pro Display', sans-serif;
-        background-color: #CD5C5C;
+        background-color: #f4f5f7;
         color: #1c1c1e;
     }
     .stApp {
-        background-color: #CD5C5C;
+        background-color: #f4f5f7;
     }
     .block-container {
         padding-top: 2rem;
@@ -34,8 +34,8 @@ def estimate_spy(spx_val):
     return round(spx_val / 10, 2)
 
 # --- Tracking Error Visualization with Comparison ---
-st.subheader("📈 SPY Comparison Chart")
-compare_ticker = st.text_input("Please choose a stock (e.g. AAPL, MSFT, TSLA):", value="AAPL")
+st.subheader("📈 SPY vs The Rest Of The Market)")
+compare_ticker = st.text_input("Compare with another stock (e.g. AAPL, MSFT, TSLA):", value="AAPL")
 
 try:
     spy_hist = yf.download("SPY", period="1y")
@@ -77,4 +77,4 @@ user_spx = st.number_input("Enter SPX Value", min_value=0.0, value=5500.0, step=
 spy_estimate = estimate_spy(user_spx)
 st.metric(label="Estimated SPY", value=f"${spy_estimate:.2f}")
 
-st.caption("✨ https://github.com/BluBaron007?tab=repositories")
+st.caption("✨ This Apple-style dashboard uses Deep Slate Blue (#483D8B) to elegantly track SPY estimates alongside custom stock comparisons.")
