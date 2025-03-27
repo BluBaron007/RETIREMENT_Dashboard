@@ -77,4 +77,4 @@ user_spx = st.number_input("Enter SPX Value", min_value=0.0, value=5500.0, step=
 spy_estimate = estimate_spy(user_spx)
 st.metric(label="Estimated SPY", value=f"${spy_estimate:.2f}")
 
-st.caption("✨ This Apple-style dashboard uses Deep Slate Blue (#483D8B) to elegantly track SPY estimates alongside custom stock comparisons.")
+st.caption("✨ https://github.com/BluBaron007?tab=repositories")
