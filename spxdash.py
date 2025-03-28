@@ -46,11 +46,7 @@ selected_funds = st.multiselect(
     default=["2040 - VFORX", "2050 - VFIFX"]
 )
 
-ma_options = st.multiselect(
-    "Select Moving Averages to Display:",
-    options=[10, 50, 75, 200],
-    default=[10, 50, 200]
-)
+ma_options = [10, 50, 75, 200]  # Used internally for calculations only
 
 if selected_funds:
     tickers = [vanguard_funds[fund] for fund in selected_funds]
@@ -62,10 +58,13 @@ if selected_funds:
 
     if isinstance(raw_data.columns, pd.MultiIndex):
         if 'Adj Close' in raw_data.columns.levels[0]:
-            data = raw_data['Adj Close']
-        else:
-            st.error("⚠️ 'Adj Close' data not found in fetched results.")
-            st.stop()
+        data = raw_data['Adj Close']
+    elif 'Close' in raw_data.columns.levels[0]:
+        data = raw_data['Close']
+        st.warning("⚠️ 'Adj Close' not available. Using 'Close' instead.")
+    else:
+        st.error("⚠️ Neither 'Adj Close' nor 'Close' found in data.")
+        st.stop()
     else:
         if 'Adj Close' in raw_data.columns:
             data = raw_data[['Adj Close']].rename(columns={'Adj Close': tickers[0]})
@@ -90,6 +89,14 @@ if selected_funds:
     ax.grid(True, linestyle="--", alpha=0.6)
     ax.legend(loc='upper left')
     st.pyplot(fig)
+
+    # Show last updated date
+    import pytz
+from datetime import timezone
+
+user_tz = datetime.now().astimezone().tzinfo
+last_updated = data.index[-1].tz_localize('UTC').tz_convert(user_tz).strftime("%B %d, %Y %I:%M %p %Z")
+    st.caption(f"📅 Data last updated: {last_updated}")
 
     st.subheader("📊 Fund Statistics")
     returns = data.pct_change().dropna()
