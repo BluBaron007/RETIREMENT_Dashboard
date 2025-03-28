@@ -54,7 +54,11 @@ ma_options = st.multiselect(
 
 if selected_funds:
     tickers = [vanguard_funds[fund] for fund in selected_funds]
-    data = yf.download(tickers, period="5y", progress=False)['Adj Close']
+    raw_data = yf.download(tickers, period="5y", progress=False)
+    if isinstance(raw_data.columns, pd.MultiIndex):
+        data = raw_data['Adj Close']
+    else:
+        data = raw_data[['Adj Close']].rename(columns={'Adj Close': tickers[0]})
 
     st.subheader("📈 5-Year Performance Chart with Moving Averages")
     fig, ax = plt.subplots(figsize=(10, 5))
