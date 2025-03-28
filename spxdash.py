@@ -64,11 +64,12 @@ if selected_funds:
     fig, ax = plt.subplots(figsize=(10, 5))
 
     for ticker in tickers:
-        normalized = data[ticker] / data[ticker].iloc[0] * 100
+        col_name = ticker if ticker in data.columns else data.columns[0]
+        normalized = data[col_name] / data[col_name].iloc[0] * 100
         ax.plot(normalized, label=f"{ticker} (Price)", linewidth=2)
         for ma in ma_options:
-            ma_series = data[ticker].rolling(window=ma).mean()
-            ma_normalized = ma_series / data[ticker].iloc[0] * 100
+            ma_series = data[col_name].rolling(window=ma).mean()
+            ma_normalized = ma_series / data[col_name].iloc[0] * 100
             ax.plot(ma_normalized, linestyle='--', alpha=0.6, label=f"{ticker} {ma}-day MA")
 
     ax.set_title("Normalized Performance of Selected Vanguard Funds", fontsize=14, color="#483D8B")
