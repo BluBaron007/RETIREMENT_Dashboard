@@ -3,6 +3,7 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
 
 st.set_page_config(page_title="Vanguard Retirement Dashboard", layout="centered")
 st.markdown("""
@@ -29,14 +30,14 @@ st.markdown("""
 
 st.title("📊 Vanguard Retirement Fund Dashboard")
 
-# Available Vanguard target-date funds
 vanguard_funds = {
     "2025 - VTTVX": "VTTVX",
     "2030 - VTHRX": "VTHRX",
     "2040 - VFORX": "VFORX",
     "2050 - VFIFX": "VFIFX",
     "2060 - VTTSX": "VTTSX",
-    "2070 - VSVNX": "VSVNX"
+    "2070 - VSVNX": "VSVNX",
+    "Vanguard Growth - VIGRX": "VIGRX"
 }
 
 selected_funds = st.multiselect(
@@ -61,7 +62,6 @@ if selected_funds:
     for ticker in tickers:
         normalized = data[ticker] / data[ticker].iloc[0] * 100
         ax.plot(normalized, label=f"{ticker} (Price)", linewidth=2)
-
         for ma in ma_options:
             ma_series = data[ticker].rolling(window=ma).mean()
             ma_normalized = ma_series / data[ticker].iloc[0] * 100
@@ -99,4 +99,37 @@ if selected_funds:
 
     st.dataframe(stats)
 
-st.caption("📈 This dashboard tracks historical and technical data for major Vanguard retirement funds.")
+    st.subheader("📅 Projected Value Calculator")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        target_year = st.slider("Target Year", min_value=datetime.now().year+1, max_value=2075, value=2050)
+    with col2:
+        monthly_investment = st.number_input("Monthly Investment ($)", min_value=0, value=500, step=50)
+    with col3:
+        expected_return = st.slider("Expected Annual Return (%)", 1.0, 12.0, 6.0, step=0.1)
+
+    current_year = datetime.now().year
+    years = target_year - current_year
+    r = expected_return / 100 / 12  # monthly rate
+    n = 12 * years
+
+    if r > 0:
+        future_value = monthly_investment * (((1 + r) ** n - 1) / r)
+    else:
+        future_value = monthly_investment * n
+
+    st.markdown(f"### 📈 Projected Value by {target_year}: **${future_value:,.2f}**")
+
+    # Plot growth curve
+    future_values = [monthly_investment * (((1 + r) ** (12 * yr) - 1) / r) if r > 0 else monthly_investment * 12 * yr for yr in range(1, years + 1)]
+    future_df = pd.DataFrame({"Year": list(range(current_year + 1, target_year + 1)), "Projected Value": future_values})
+
+    fig2, ax2 = plt.subplots(figsize=(10, 4))
+    ax2.plot(future_df["Year"], future_df["Projected Value"], color="#483D8B", linewidth=2)
+    ax2.set_title("Projected Investment Growth Over Time")
+    ax2.set_ylabel("Total Value ($)")
+    ax2.set_xlabel("Year")
+    ax2.grid(True, linestyle="--", alpha=0.5)
+    st.pyplot(fig2)
+
+st.caption("📈 This dashboard tracks historical and technical data for major Vanguard retirement funds, with projections for future planning.")
