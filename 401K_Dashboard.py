@@ -45,14 +45,26 @@ selected_funds = st.multiselect(
     default=["2040 - VFORX", "2050 - VFIFX"]
 )
 
+ma_options = st.multiselect(
+    "Select Moving Averages to Display:",
+    options=[10, 50, 75, 200],
+    default=[10, 50, 200]
+)
+
 if selected_funds:
     tickers = [vanguard_funds[fund] for fund in selected_funds]
     data = yf.download(tickers, period="5y")['Adj Close']
 
-    st.subheader("📈 5-Year Performance Chart")
-    normalized = data / data.iloc[0] * 100
+    st.subheader("📈 5-Year Performance Chart with Moving Averages")
     fig, ax = plt.subplots(figsize=(10, 5))
-    normalized.plot(ax=ax, linewidth=2)
+    for ticker in tickers:
+        normalized = data[ticker] / data[ticker].iloc[0] * 100
+        ax.plot(normalized, label=f"{ticker} (Price)", linewidth=2)
+        for ma in ma_options:
+            ma_series = data[ticker].rolling(window=ma).mean()
+            ma_normalized = ma_series / data[ticker].iloc[0] * 100
+            ax.plot(ma_normalized, linestyle='--', alpha=0.6, label=f"{ticker} {ma}-day MA")
+
     ax.set_title("Normalized Performance of Selected Vanguard Funds", fontsize=14, color="#483D8B")
     ax.set_ylabel("Growth (%)")
     ax.grid(True, linestyle="--", alpha=0.6)
@@ -61,11 +73,27 @@ if selected_funds:
 
     st.subheader("📊 Fund Statistics")
     returns = data.pct_change().dropna()
+    cagr = ((data.iloc[-1] / data.iloc[0]) ** (1 / 5) - 1)
+    vol = returns.std()
+    drawdown = (data / data.cummax() - 1).min()
+    current_prices = data.iloc[-1]
+    ma_comparisons = {
+        f"MA {ma} Position": [
+            "Above" if current_prices[ticker] > data[ticker].rolling(ma).mean().iloc[-1] else "Below"
+            for ticker in tickers
+        ] for ma in ma_options
+    }
+
     stats = pd.DataFrame({
-        "CAGR": ((data.iloc[-1] / data.iloc[0]) ** (1 / 5) - 1).map(lambda x: f"{x:.2%}"),
-        "Volatility (Std Dev)": returns.std().map(lambda x: f"{x:.2%}"),
-        "Max Drawdown": ((data / data.cummax()) - 1).min().map(lambda x: f"{x:.2%}")
+        "Current Price": current_prices,
+        "CAGR": cagr.map(lambda x: f"{x:.2%}"),
+        "Volatility (Std Dev)": vol.map(lambda x: f"{x:.2%}"),
+        "Max Drawdown": drawdown.map(lambda x: f"{x:.2%}")
     })
+
+    for ma, positions in ma_comparisons.items():
+        stats[ma] = positions
+
     st.dataframe(stats)
 
 st.divider()
