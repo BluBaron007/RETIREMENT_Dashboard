@@ -55,10 +55,23 @@ ma_options = st.multiselect(
 if selected_funds:
     tickers = [vanguard_funds[fund] for fund in selected_funds]
     raw_data = yf.download(tickers, period="5y", progress=False)
+
+    if raw_data.empty:
+        st.error("🚫 No data returned. One or more tickers may be invalid or unavailable.")
+        st.stop()
+
     if isinstance(raw_data.columns, pd.MultiIndex):
-        data = raw_data['Adj Close']
+        if 'Adj Close' in raw_data.columns.levels[0]:
+            data = raw_data['Adj Close']
+        else:
+            st.error("⚠️ 'Adj Close' data not found in fetched results.")
+            st.stop()
     else:
-        data = raw_data[['Adj Close']].rename(columns={'Adj Close': tickers[0]})
+        if 'Adj Close' in raw_data.columns:
+            data = raw_data[['Adj Close']].rename(columns={'Adj Close': tickers[0]})
+        else:
+            st.error("⚠️ 'Adj Close' data not found for selected fund.")
+            st.stop()
 
     st.subheader("📈 5-Year Performance Chart with Moving Averages")
     fig, ax = plt.subplots(figsize=(10, 5))
