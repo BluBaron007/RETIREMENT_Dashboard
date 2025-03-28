@@ -9,7 +9,7 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap');
 
-    html, body, [class*="css"]  {
+    html, body, [class*="css"] {
         font-family: 'SF Pro Display', sans-serif;
         background-color: #F8F8FF;
         color: #1c1c1e;
@@ -29,7 +29,7 @@ st.markdown("""
 
 st.title("📊 Vanguard Retirement Fund Dashboard")
 
-# Vanguard retirement fund tickers
+# Available Vanguard target-date funds
 vanguard_funds = {
     "2025 - VTTVX": "VTTVX",
     "2030 - VTHRX": "VTHRX",
@@ -53,13 +53,15 @@ ma_options = st.multiselect(
 
 if selected_funds:
     tickers = [vanguard_funds[fund] for fund in selected_funds]
-    data = yf.download(tickers, period="5y")['Adj Close']
+    data = yf.download(tickers, period="5y", progress=False)['Adj Close']
 
     st.subheader("📈 5-Year Performance Chart with Moving Averages")
     fig, ax = plt.subplots(figsize=(10, 5))
+
     for ticker in tickers:
         normalized = data[ticker] / data[ticker].iloc[0] * 100
         ax.plot(normalized, label=f"{ticker} (Price)", linewidth=2)
+
         for ma in ma_options:
             ma_series = data[ticker].rolling(window=ma).mean()
             ma_normalized = ma_series / data[ticker].iloc[0] * 100
@@ -77,6 +79,7 @@ if selected_funds:
     vol = returns.std()
     drawdown = (data / data.cummax() - 1).min()
     current_prices = data.iloc[-1]
+
     ma_comparisons = {
         f"MA {ma} Position": [
             "Above" if current_prices[ticker] > data[ticker].rolling(ma).mean().iloc[-1] else "Below"
@@ -96,6 +99,4 @@ if selected_funds:
 
     st.dataframe(stats)
 
-st.divider()
-
-st.page_link("pages/SPX_SPY_Estimator.py", label="📉 Go to SPX ➝ SPY Estimator", icon="📊")
+st.caption("📈 This dashboard tracks historical and technical data for major Vanguard retirement funds.")
